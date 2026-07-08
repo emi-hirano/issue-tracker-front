@@ -95,6 +95,9 @@ function NewIssue() {
   return (
     <div style={{ maxWidth: "500px", margin: "0 auto", padding: "16px" }}>
       <h1>課題の新規登録</h1>
+      <button onClick={() => navigate("/")} style={{ marginBottom: "16px" }}>
+        一覧に戻る
+      </button>
 
       {/* プロジェクト選択（取得したprojectsをoptionに展開） */}
       <div style={{ marginBottom: "12px" }}>

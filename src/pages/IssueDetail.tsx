@@ -36,77 +36,76 @@ function IssueDetail() {
   // 課題1件を入れる箱（最初はまだ無いのでnull）
   const [issue, setIssue] = useState<Issue | null>(null);
 
-  // 画面表示時に、URLのidを使って詳細APIを叩く
+  const [notFound, setNotFound] = useState(false);
+
   useEffect(() => {
     fetch(`http://localhost/api/issues/${id}`)
-      .then((res) => res.json())
-      .then((data) => setIssue(data));
-  }, [id]); // idが変わったら取り直す
-
-  // 「削除する」ボタンの処理
-    const handleDelete = () => {
-      // 誤操作防止：確認ダイアログを出す
-      if (!window.confirm("この課題を削除しますか？")) {
-        return; // キャンセルされたら何もしない
-      }
-
-      const token = localStorage.getItem("token");
-
-      fetch(`http://localhost/api/issues/${id}`, {
-        method: "DELETE", // 削除なのでDELETE
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`, // トークンで認証
-        },
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("見つかりません");
+        }
+        return res.json();
       })
-        .then((res) => {
-          if (!res.ok) {
-            throw new Error("削除に失敗しました");
-          }
-          // 削除成功したら一覧へ戻る
-          navigate("/");
-        })
-        .catch((err) => {
-          alert(err.message); // 失敗したらメッセージ表示
-        });
-    };
+      .then((data) => setIssue(data))
+      .catch(() => setNotFound(true)); // 失敗したら「見つからない」状態にする
+  }, [id]);
+
+    // 「削除する」ボタンの処理
+    const handleDelete = () => {
+    // 誤操作防止：確認ダイアログを出す
+    if (!window.confirm("この課題を削除しますか？")) {
+      return; // キャンセルされたら何もしない
+    }
+
+    const token = localStorage.getItem("token");
+
+    fetch(`http://localhost/api/issues/${id}`, {
+      method: "DELETE", // 削除なのでDELETE
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`, // トークンで認証
+      },
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("削除に失敗しました");
+        }
+        // 削除成功したら一覧へ戻る
+        navigate("/");
+      })
+      .catch((err) => {
+        alert(err.message); // 失敗したらメッセージ表示
+      });
+  };
     
-  // まだデータが来ていない間の表示
+  // 存在しない課題のとき
+  if (notFound) {
+    return (
+      <div style={{ maxWidth: "700px", margin: "0 auto", padding: "32px 16px" }}>
+        <button onClick={() => navigate("/")}>← 一覧に戻る</button>
+        <h1>課題が見つかりません</h1>
+        <p>指定された課題は存在しないか、削除された可能性があります。</p>
+      </div>
+    );
+  }
+
+  // まだ読み込み中のとき
   if (!issue) {
     return <div style={{ padding: "16px" }}>読み込み中...</div>;
   }
 
   return (
-    <div style={{ maxWidth: "700px", margin: "0 auto", padding: "16px" }}>
-      {/* 一覧に戻るリンク */}
-      <button onClick={() => navigate("/")} style={{ marginBottom: "16px" }}>
-        ← 一覧に戻る
-      </button>
+    <div style={{ maxWidth: "700px", margin: "0 auto", padding: "64px 16px 16px" }}>
 
-      {/* タイトルと編集ボタンを両端に配置 */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <h1>{issue.title}</h1>
-        <div>
-          <button
-            onClick={() => navigate(`/issues/${issue.id}/edit`)}
-            style={{ marginRight: "8px" }}
-          >
-            編集する
-          </button>
-          <button
-            onClick={handleDelete}
-            style={{ color: "red" }}
-          >
-            削除する
-          </button>
-        </div>
+      {/* 操作ボタンを上部に横並び */}
+      <div style={{ marginBottom: "16px", display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+        <button onClick={() => navigate("/")}>一覧に戻る</button>
+        <button onClick={() => navigate(`/issues/${issue.id}/edit`)}>編集する</button>
+        <button onClick={handleDelete} style={{ color: "red" }}>削除する</button>
       </div>
+
+      {/* タイトルは単独で1行使う（長くても折り返せる） */}
+      <h1>{issue.title}</h1>
 
       {/* 基本情報 */}
       <p>ステータス: {issue.status} / 優先度: {issue.priority}</p>

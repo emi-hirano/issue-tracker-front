@@ -46,8 +46,21 @@ function IssueList() {
   }, []); // []なので初回のみ実行
 
   return (
-    <div style={{ maxWidth: "800px", margin: "0 auto", padding: "16px" }}>
-      <h1>課題一覧</h1>
+    // <div style={{ maxWidth: "800px", margin: "0 auto", padding: "16px" }}>
+    <div style={{ maxWidth: "800px", margin: "0 auto", padding: "64px 16px 16px" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "16px",
+        }}
+      >
+        <h1 style={{ margin: 0 }}>課題一覧</h1>
+        <button onClick={() => navigate("/issues/new")}>
+          新規登録
+        </button>
+      </div>
 
       {/* 取得した課題を1件ずつカードとして表示 */}
       {issues.map((issue) => (
