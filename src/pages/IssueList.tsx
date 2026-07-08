@@ -34,6 +34,36 @@ function isLightColor(hex: string): boolean {
   return brightness > 128;
 }
 
+// ステータスに応じた色（背景・文字）を返す
+function statusColor(status: string): { bg: string; text: string } {
+  switch (status) {
+    case "open":
+      return { bg: "#DBEAFE", text: "#1E40AF" }; // 青系パステル
+    case "in_progress":
+      return { bg: "#FEF3C7", text: "#92400E" }; // オレンジ系パステル
+    case "resolved":
+      return { bg: "#D1FAE5", text: "#065F46" }; // 緑系パステル
+    case "closed":
+      return { bg: "#E5E7EB", text: "#374151" }; // グレー系パステル
+    default:
+      return { bg: "#E5E7EB", text: "#374151" };
+  }
+}
+
+// 優先度に応じた色（背景・文字）を返す
+function priorityColor(priority: string): { bg: string; text: string } {
+  switch (priority) {
+    case "high":
+      return { bg: "#FEE2E2", text: "#B91C1C" }; // 赤系パステル（highは赤）
+    case "medium":
+      return { bg: "#FEF3C7", text: "#92400E" }; // オレンジ系パステル
+    case "low":
+      return { bg: "#F3F4F6", text: "#6B7280" }; // 薄グレー
+    default:
+      return { bg: "#F3F4F6", text: "#6B7280" };
+  }
+}
+
 // UTCの日時文字列を「2026/7/7 10:15」形式（日本時間）に変換する
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr);
@@ -51,12 +81,25 @@ function IssueList() {
   const [issues, setIssues] = useState<Issue[]>([]);
   const navigate = useNavigate();
 
-  // 画面表示時に一度だけ、課題一覧APIを叩いて取得する
+  const [statusFilter, setStatusFilter] = useState("all");
+
   useEffect(() => {
-    fetch("http://localhost/api/issues")
+    // "all"なら条件なし、それ以外は ?status=xxx を付ける
+    const url =
+      statusFilter === "all"
+        ? "http://localhost/api/issues"
+        : `http://localhost/api/issues?status=${statusFilter}`;
+
+    fetch(url)
       .then((res) => res.json())
       .then((data) => setIssues(data));
-  }, []); // []なので初回のみ実行
+  }, [statusFilter]); // statusFilterが変わったら再取得
+
+  // statusFilterに応じて表示する課題を絞る
+  const filteredIssues =
+    statusFilter === "all"
+      ? issues // "all"なら全部
+      : issues.filter((issue) => issue.status === statusFilter); // それ以外は一致するものだけ
 
   return (
     // <div style={{ maxWidth: "800px", margin: "0 auto", padding: "16px" }}>
@@ -75,8 +118,24 @@ function IssueList() {
         </button>
       </div>
 
+      {/* ステータス絞り込み */}
+      <div style={{ marginBottom: "16px" }}>
+        <label style={{ marginRight: "8px" }}>ステータスで絞り込み:</label>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          style={{ padding: "6px" }}
+        >
+          <option value="all">すべて</option>
+          <option value="open">open</option>
+          <option value="in_progress">in_progress</option>
+          <option value="resolved">resolved</option>
+          <option value="closed">closed</option>
+        </select>
+      </div>
+
       {/* 取得した課題を1件ずつカードとして表示 */}
-      {issues.map((issue) => (
+      {filteredIssues.map((issue) => (
         <div
           key={issue.id}
           onClick={() => navigate(`/issues/${issue.id}`)}
@@ -100,8 +159,29 @@ function IssueList() {
             <div style={{ fontWeight: "bold", fontSize: "16px" }}>
               {issue.title}
             </div>
-            <div style={{ fontSize: "14px", color: "#555" }}>
-              {issue.status} / {issue.priority}
+            <div style={{ display: "flex", gap: "6px" }}>
+              <span
+                style={{
+                  backgroundColor: statusColor(issue.status).bg,
+                  color: statusColor(issue.status).text,
+                  padding: "2px 8px",
+                  borderRadius: "4px",
+                  fontSize: "12px",
+                }}
+              >
+                {issue.status}
+              </span>
+              <span
+                style={{
+                  backgroundColor: priorityColor(issue.priority).bg,
+                  color: priorityColor(issue.priority).text,
+                  padding: "2px 8px",
+                  borderRadius: "4px",
+                  fontSize: "12px",
+                }}
+              >
+                {issue.priority}
+              </span>
             </div>
           </div>
 
