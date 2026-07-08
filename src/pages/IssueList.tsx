@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { isLightColor, formatDate, statusColor, priorityColor } from "../utils/format";
 
 // 課題1件の形（APIから返るJSONの構造に合わせて定義）
 type Issue = {
@@ -20,61 +21,6 @@ type Issue = {
     color: string;
   }[];
 };
-
-// 背景色が明るいか暗いかを判定する（ラベルの文字色を黒/白で切り替えるため）
-// 6桁のカラーコード（#rrggbb）を前提とする
-function isLightColor(hex: string): boolean {
-  // #を飛ばして、赤・緑・青を16進数→数値に変換
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  // 人間の目の感度に合わせた重み付けで明るさを算出
-  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-  // 128（中間）より明るければ true
-  return brightness > 128;
-}
-
-// ステータスに応じた色（背景・文字）を返す
-function statusColor(status: string): { bg: string; text: string } {
-  switch (status) {
-    case "open":
-      return { bg: "#DBEAFE", text: "#1E40AF" }; // 青系パステル
-    case "in_progress":
-      return { bg: "#FEF3C7", text: "#92400E" }; // オレンジ系パステル
-    case "resolved":
-      return { bg: "#D1FAE5", text: "#065F46" }; // 緑系パステル
-    case "closed":
-      return { bg: "#E5E7EB", text: "#374151" }; // グレー系パステル
-    default:
-      return { bg: "#E5E7EB", text: "#374151" };
-  }
-}
-
-// 優先度に応じた色（背景・文字）を返す
-function priorityColor(priority: string): { bg: string; text: string } {
-  switch (priority) {
-    case "high":
-      return { bg: "#FEE2E2", text: "#B91C1C" }; // 赤系パステル（highは赤）
-    case "medium":
-      return { bg: "#FEF3C7", text: "#92400E" }; // オレンジ系パステル
-    case "low":
-      return { bg: "#F3F4F6", text: "#6B7280" }; // 薄グレー
-    default:
-      return { bg: "#F3F4F6", text: "#6B7280" };
-  }
-}
-
-// UTCの日時文字列を「2026/7/7 10:15」形式（日本時間）に変換する
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  return date.toLocaleString("ja-JP", {
-    year: "numeric",
-    month: "numeric",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
 
 function IssueList() {
   // 課題一覧を入れておく箱（最初は空配列）
