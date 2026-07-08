@@ -13,10 +13,15 @@ type User = {
   name: string;
 };
 
+type Label = { id: number; name: string; color: string };
+
 function NewIssue() {
   // プルダウンの選択肢データ（APIから取得して入れる箱）
   const [projects, setProjects] = useState<Project[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+
+  const [labels, setLabels] = useState<Label[]>([]);        // ラベル一覧（選択肢）
+  const [labelIds, setLabelIds] = useState<number[]>([]);   // 選択されたラベルidの配列
 
   // フォームの入力値を覚えておく箱（入力するたびに更新される）
   const [projectId, setProjectId] = useState("");
@@ -40,6 +45,10 @@ function NewIssue() {
     fetch("http://localhost/api/users")
       .then((res) => res.json())
       .then((data) => setUsers(data));
+
+    fetch("http://localhost/api/labels")
+      .then((res) => res.json())
+      .then((data) => setLabels(data));
   }, []); // []なので最初の1回だけ実行
 
   // 「登録する」ボタンを押したときの処理
@@ -65,6 +74,7 @@ function NewIssue() {
         description: description,
         status: status,
         priority: priority,
+        label_ids: labelIds,
       }),
     })
       .then((res) => {
@@ -169,6 +179,33 @@ function NewIssue() {
           <option value="medium">medium</option>
           <option value="high">high</option>
         </select>
+      </div>
+
+      {/* ラベル選択（複数選択可） */}
+      <div style={{ marginBottom: "12px" }}>
+        <label style={{ display: "block", marginBottom: "4px" }}>ラベル</label>
+        {labels.map((label) => (
+          <label
+            key={label.id}
+            style={{ display: "inline-flex", alignItems: "center", marginRight: "12px", marginBottom: "4px" }}
+          >
+            <input
+              type="checkbox"
+              checked={labelIds.includes(label.id)}
+              onChange={(e) => {
+                if (e.target.checked) {
+                  // チェックされたら配列に追加
+                  setLabelIds([...labelIds, label.id]);
+                } else {
+                  // 外されたら配列から除去
+                  setLabelIds(labelIds.filter((id) => id !== label.id));
+                }
+              }}
+              style={{ marginRight: "4px" }}
+            />
+            {label.name}
+          </label>
+        ))}
       </div>
 
       {/* エラーがあるときだけ赤字で表示 */}

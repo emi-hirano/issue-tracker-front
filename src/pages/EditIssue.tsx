@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+type Label = { id: number; name: string; color: string };
 
 // プルダウン用の型
 type Project = { id: number; name: string };
@@ -13,7 +14,9 @@ function EditIssue() {
   // プルダウンの選択肢データ
   const [projects, setProjects] = useState<Project[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-
+  const [labels, setLabels] = useState<Label[]>([]);
+  const [labelIds, setLabelIds] = useState<number[]>([]);
+  
   // フォームの入力値（最初は空。既存データ読み込み後に埋める）
   const [projectId, setProjectId] = useState("");
   const [reporterId, setReporterId] = useState("");
@@ -45,7 +48,13 @@ function EditIssue() {
         setDescription(data.description ?? "");
         setStatus(data.status);
         setPriority(data.priority);
+        // 今付いているラベルのidだけを取り出して、チェック済みにする
+        setLabelIds(data.labels.map((label: Label) => label.id));
       });
+
+      fetch("http://localhost/api/labels")
+      .then((res) => res.json())
+      .then((data) => setLabels(data));
   }, [id]);
 
   // 「更新する」ボタンの処理
@@ -67,6 +76,7 @@ function EditIssue() {
         description: description,
         status: status,
         priority: priority,
+        label_ids: labelIds,
       }),
     })
       .then((res) => {
@@ -88,6 +98,10 @@ function EditIssue() {
     <div style={{ maxWidth: "500px", margin: "0 auto", padding: "16px" }}>
       <h1>課題の編集</h1>
 
+      <button onClick={() => navigate(`/issues/${id}`)} style={{ marginBottom: "16px" }}>
+        戻る
+      </button>
+      
       {/* プロジェクト */}
       <div style={{ marginBottom: "12px" }}>
         <label style={{ display: "block", marginBottom: "4px" }}>プロジェクト</label>
@@ -170,6 +184,31 @@ function EditIssue() {
           <option value="medium">medium</option>
           <option value="high">high</option>
         </select>
+      </div>
+
+      {/* ラベル選択（複数選択可・既存ラベルは初期チェック済み） */}
+      <div style={{ marginBottom: "12px" }}>
+        <label style={{ display: "block", marginBottom: "4px" }}>ラベル</label>
+        {labels.map((label) => (
+          <label
+            key={label.id}
+            style={{ display: "inline-flex", alignItems: "center", marginRight: "12px", marginBottom: "4px" }}
+          >
+            <input
+              type="checkbox"
+              checked={labelIds.includes(label.id)}
+              onChange={(e) => {
+                if (e.target.checked) {
+                  setLabelIds([...labelIds, label.id]);
+                } else {
+                  setLabelIds(labelIds.filter((id) => id !== label.id));
+                }
+              }}
+              style={{ marginRight: "4px" }}
+            />
+            {label.name}
+          </label>
+        ))}
       </div>
 
       {error && (
