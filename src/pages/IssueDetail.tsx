@@ -15,6 +15,7 @@ type Issue = {
   comments: {
     id: number;
     body: string;
+    created_at: string;
     user: { id: number; name: string } | null;
   }[];
 };
@@ -28,6 +29,18 @@ function isLightColor(hex: string): boolean {
   return brightness > 128;
 }
 
+// UTCの日時文字列を「2026/7/7 10:15」形式（日本時間）に変換する
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr);
+  return date.toLocaleString("ja-JP", {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 function IssueDetail() {
   // URLの :id 部分を受け取る（例: /issues/1 なら id = "1"）
   const { id } = useParams();
@@ -37,6 +50,8 @@ function IssueDetail() {
   const [issue, setIssue] = useState<Issue | null>(null);
 
   const [notFound, setNotFound] = useState(false);
+  const [commentBody, setCommentBody] = useState("");
+  const [commentError, setCommentError] = useState("");
 
   useEffect(() => {
     fetch(`http://localhost/api/issues/${id}`)
@@ -52,29 +67,63 @@ function IssueDetail() {
 
     // 「削除する」ボタンの処理
     const handleDelete = () => {
-    // 誤操作防止：確認ダイアログを出す
-    if (!window.confirm("この課題を削除しますか？")) {
-      return; // キャンセルされたら何もしない
-    }
+      // 誤操作防止：確認ダイアログを出す
+      if (!window.confirm("この課題を削除しますか？")) {
+        return; // キャンセルされたら何もしない
+      }
 
+      const token = localStorage.getItem("token");
+
+      fetch(`http://localhost/api/issues/${id}`, {
+        method: "DELETE", // 削除なのでDELETE
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`, // トークンで認証
+        },
+      })
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error("削除に失敗しました");
+          }
+          // 削除成功したら一覧へ戻る
+          navigate("/");
+        })
+        .catch((err) => {
+          alert(err.message); // 失敗したらメッセージ表示
+        });
+  };
+
+  // コメントを投稿する
+  const handleCommentSubmit = () => {
+    setCommentError("");
     const token = localStorage.getItem("token");
 
-    fetch(`http://localhost/api/issues/${id}`, {
-      method: "DELETE", // 削除なのでDELETE
+    fetch(`http://localhost/api/issues/${id}/comments`, {
+      method: "POST",
       headers: {
+        "Content-Type": "application/json",
         Accept: "application/json",
-        Authorization: `Bearer ${token}`, // トークンで認証
+        Authorization: `Bearer ${token}`,
       },
+      body: JSON.stringify({ body: commentBody }), // 本文だけ送る（投稿者はサーバーが決める）
     })
       .then((res) => {
         if (!res.ok) {
-          throw new Error("削除に失敗しました");
+          throw new Error("コメントの投稿に失敗しました（ログインが必要です）");
         }
-        // 削除成功したら一覧へ戻る
-        navigate("/");
+        return res.json();
+      })
+      .then((newComment) => {
+        // 投稿成功：一覧に新しいコメントを追加して、入力欄を空にする
+        setIssue({
+          ...issue!,
+          // comments: [...issue!.comments, newComment],
+          comments: [newComment, ...issue!.comments],
+        });
+        setCommentBody("");
       })
       .catch((err) => {
-        alert(err.message); // 失敗したらメッセージ表示
+        setCommentError(err.message);
       });
   };
     
@@ -140,6 +189,22 @@ function IssueDetail() {
 
       {/* コメント一覧 */}
       <h2>コメント（{issue.comments.length}件）</h2>
+
+      {/* コメント投稿フォーム */}
+      <div style={{ marginTop: "16px", marginBottom: "16px" }}>
+        <textarea
+          value={commentBody}
+          onChange={(e) => setCommentBody(e.target.value)}
+          placeholder="コメントを入力..."
+          style={{ width: "100%", padding: "8px", boxSizing: "border-box", minHeight: "60px" }}
+        />
+        {commentError && (
+          <div style={{ color: "red", marginBottom: "8px" }}>{commentError}</div>
+        )}
+        <button onClick={handleCommentSubmit} style={{ marginTop: "8px" }}>
+          コメントする
+        </button>
+      </div>
       {issue.comments.map((comment) => (
         <div
           key={comment.id}
@@ -152,9 +217,13 @@ function IssueDetail() {
         >
           <div style={{ fontWeight: "bold", fontSize: "14px" }}>
             {comment.user?.name ?? "不明"}
+              <span style={{ fontWeight: "normal", fontSize: "12px", color: "#888", marginLeft: "8px" }}>
+                {formatDate(comment.created_at)}
+              </span>
           </div>
           <div>{comment.body}</div>
         </div>
+        
       ))}
     </div>
   );

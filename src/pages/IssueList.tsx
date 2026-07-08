@@ -7,6 +7,7 @@ type Issue = {
   title: string;
   status: string;
   priority: string;
+  created_at: string;
   // 報告者。DBはNOT NULLだが、念のためnull許容で防御
   reporter: {
     id: number;
@@ -31,6 +32,18 @@ function isLightColor(hex: string): boolean {
   const brightness = (r * 299 + g * 587 + b * 114) / 1000;
   // 128（中間）より明るければ true
   return brightness > 128;
+}
+
+// UTCの日時文字列を「2026/7/7 10:15」形式（日本時間）に変換する
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr);
+  return date.toLocaleString("ja-JP", {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 function IssueList() {
@@ -94,7 +107,7 @@ function IssueList() {
 
           {/* 報告者。nullの場合は「未割り当て」と表示 */}
           <div style={{ fontSize: "14px", color: "#555", marginBottom: "8px" }}>
-            報告者: {issue.reporter?.name ?? "未割り当て"}
+            報告者: {issue.reporter?.name ?? "未割り当て"}・ 起票: {formatDate(issue.created_at)}
           </div>
 
           {/* ラベルを色付きバッジで並べる */}
