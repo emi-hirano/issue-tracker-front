@@ -85,18 +85,9 @@ function IssueList() {
       queryString === ""
         ? "http://localhost/api/issues"
         : `http://localhost/api/issues?${queryString}`;
-    // const url =
-    // queryString === ""
-    //   ? "http://localhost/api/issues/my"
-    //   : `http://localhost/api/issues/my?${queryString}`;
+
   
     fetch(url)
-    // fetch(url, {
-    //   headers: {
-    //     Accept: "application/json",
-    //     Authorization: `Bearer ${localStorage.getItem("token")}`,
-    //   },
-    // })
       .then((res) => res.json())
       .then((data) => {
         setIssues(data.data);

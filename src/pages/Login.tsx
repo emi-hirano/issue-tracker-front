@@ -39,7 +39,13 @@ function Login() {
   };
 
   return (
-    <div style={{ maxWidth: "400px", margin: "0 auto", padding: "16px" }}>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleLogin();
+      }}
+      style={{ maxWidth: "400px", margin: "0 auto", padding: "16px" }}
+    >
       <h1>ログイン</h1>
 
       {/* メールアドレス入力 */}
@@ -48,12 +54,12 @@ function Login() {
         <input
           type="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)} // 入力のたびに箱を更新
+          onChange={(e) => setEmail(e.target.value)}
           style={{ width: "100%", padding: "8px", boxSizing: "border-box" }}
         />
       </div>
 
-      {/* パスワード入力（type=passwordで伏字になる） */}
+      {/* パスワード入力 */}
       <div style={{ marginBottom: "12px" }}>
         <label style={{ display: "block", marginBottom: "4px" }}>パスワード</label>
         <input
@@ -64,15 +70,14 @@ function Login() {
         />
       </div>
 
-      {/* エラーがあるときだけ赤字で表示 */}
       {error && (
         <div style={{ color: "red", marginBottom: "12px" }}>{error}</div>
       )}
 
-      <button onClick={handleLogin} style={{ padding: "8px 16px" }}>
+      <button type="submit" style={{ padding: "8px 16px" }}>
         ログイン
       </button>
-    </div>
+    </form>
   );
 }
 
