@@ -4,6 +4,7 @@ import Login from "./pages/Login";
 import NewIssue from "./pages/NewIssue";
 import IssueDetail from "./pages/IssueDetail";
 import EditIssue from "./pages/EditIssue";
+import MyIssues from "./pages/MyIssues";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route path="/issues/new" element={<NewIssue />} />
         <Route path="/issues/:id" element={<IssueDetail />} />
         <Route path="/issues/:id/edit" element={<EditIssue />} />
+        <Route path="/my" element={<MyIssues />} />
       </Routes>
     </BrowserRouter>
   );
