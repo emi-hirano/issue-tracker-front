@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { apiFetch } from "../utils/api";
 
 // プルダウンに出すプロジェクトの形（idと名前だけあればいい）
 type Project = {
@@ -37,18 +38,12 @@ function NewIssue() {
   // 画面が最初に表示されたとき、プルダウン用のデータを取得する
   useEffect(() => {
     // プロジェクト一覧を取得
-    fetch("http://localhost/api/projects")
-      .then((res) => res.json())
-      .then((data) => setProjects(data));
+    apiFetch("/projects").then((data) => setProjects(data));
 
-    // ユーザー一覧を取得（idとnameのみ返るAPI）
-    fetch("http://localhost/api/users")
-      .then((res) => res.json())
-      .then((data) => setUsers(data));
+    // ユーザー一覧を取得（idとnameのみ返すAPI）
+    apiFetch("/users").then((data) => setUsers(data));
 
-    fetch("http://localhost/api/labels")
-      .then((res) => res.json())
-      .then((data) => setLabels(data));
+    apiFetch("/labels").then((data) => setLabels(data));
   }, []); // []なので最初の1回だけ実行
 
   // 「登録する」ボタンを押したときの処理

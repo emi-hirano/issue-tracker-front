@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { apiFetch } from "../utils/api";
+
 type Label = { id: number; name: string; color: string };
 
 // プルダウン用の型
@@ -29,32 +31,24 @@ function EditIssue() {
   // 画面表示時：プルダウン用データ＋編集対象の既存データを取得
   useEffect(() => {
     // プルダウン用（新規登録と同じ）
-    fetch("http://localhost/api/projects")
-      .then((res) => res.json())
-      .then((data) => setProjects(data));
+    apiFetch("/projects").then((data) => setProjects(data));
 
-    fetch("http://localhost/api/users")
-      .then((res) => res.json())
-      .then((data) => setUsers(data));
+    apiFetch("/users").then((data) => setUsers(data));
 
     // 編集対象の課題を取得して、各入力欄に初期値としてセット
-    fetch(`http://localhost/api/issues/${id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        // idは数値なので、input用に文字列へ変換して入れる
-        setProjectId(String(data.project_id));
-        setReporterId(String(data.reporter_id));
-        setTitle(data.title);
-        setDescription(data.description ?? "");
-        setStatus(data.status);
-        setPriority(data.priority);
-        // 今付いているラベルのidだけを取り出して、チェック済みにする
-        setLabelIds(data.labels.map((label: Label) => label.id));
-      });
+    apiFetch(`/issues/${id}`).then((data) => {
+      // idは数値なので、input用に文字列へ変換して入れる
+      setProjectId(String(data.project_id));
+      setReporterId(String(data.reporter_id));
+      setTitle(data.title);
+      setDescription(data.description ?? "");
+      setStatus(data.status);
+      setPriority(data.priority);
+      // 今付いているラベルのidだけを取り出して、チェック済みにする
+      setLabelIds(data.labels.map((label: Label) => label.id));
+    });
 
-      fetch("http://localhost/api/labels")
-      .then((res) => res.json())
-      .then((data) => setLabels(data));
+    apiFetch("/labels").then((data) => setLabels(data));
   }, [id]);
 
   // 「更新する」ボタンの処理

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { isLightColor, formatDate, statusColor, priorityColor } from "../utils/format";
+import { apiFetch } from "../utils/api";
 
 type Label = {
   id: number;
@@ -47,11 +48,9 @@ function IssueList() {
   // 検索に使うラベル
   const [searchLabel, setSearchLabel] = useState("all");
 
-    // 初回表示時にラベル一覧を取得
+  // 初回表示時にラベル一覧を取得
   useEffect(() => {
-    fetch("http://localhost/api/labels")
-      .then((res) => res.json())
-      .then((data) => setLabels(data));
+    apiFetch("/labels").then((data) => setLabels(data));
   }, []);
 
   useEffect(() => {
@@ -81,19 +80,14 @@ function IssueList() {
     const queryString = params.toString();
 
     // 検索条件が無ければ一覧取得、あればクエリ付きで取得
-    const url =
-      queryString === ""
-        ? "http://localhost/api/issues"
-        : `http://localhost/api/issues?${queryString}`;
+    const path =
+      queryString === "" ? "/issues" : `/issues?${queryString}`;
 
-  
-    fetch(url)
-      .then((res) => res.json())
-      .then((data) => {
-        setIssues(data.data);
-        setCurrentPage(data.current_page);
-        setLastPage(data.last_page);
-      });
+    apiFetch(path).then((data) => {
+      setIssues(data.data);
+      setCurrentPage(data.current_page);
+      setLastPage(data.last_page);
+    });
 
   // 検索条件が変わったら再取得
   }, [searchKeyword, searchStatus, searchPriority, searchLabel, currentPage]);

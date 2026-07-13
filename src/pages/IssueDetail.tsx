@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { isLightColor, formatDate, statusColor, priorityColor } from "../utils/format";
+import { apiFetch } from "../utils/api";
 
 // 課題詳細の形（showが返すリレーション込みの構造）
 type Issue = {
@@ -34,13 +35,7 @@ function IssueDetail() {
   const [commentError, setCommentError] = useState("");
 
   useEffect(() => {
-    fetch(`http://localhost/api/issues/${id}`)
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("見つかりません");
-        }
-        return res.json();
-      })
+    apiFetch(`/issues/${id}`)
       .then((data) => setIssue(data))
       .catch(() => setNotFound(true)); // 失敗したら「見つからない」状態にする
   }, [id]);
