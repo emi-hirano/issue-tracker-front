@@ -19,7 +19,13 @@ React + TypeScript を使用してフロントエンドを実装しました。
 
 ## スクリーンショット
 
-<!-- ここに画面のスクリーンショットを貼る -->
+### 課題一覧
+<img width="1440" height="820" alt="スクリーンショット 2026-07-17 9 05 03" src="https://github.com/user-attachments/assets/207cb794-ce6a-4c9e-840f-126d4155c26c" />
+
+
+### 課題詳細
+<img width="2910" height="1846" alt="FireShot Capture 014 - 課題管理システム -  localhost" src="https://github.com/user-attachments/assets/cbfac930-4c4f-4315-9ad5-32af9d1bd369" />
+
 
 ---
 
