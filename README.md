@@ -17,6 +17,23 @@ React + TypeScript を使用してフロントエンドを実装しました。
 
 ---
 
+## デモ
+
+- フロントエンド：https://issue-tracker-front.onrender.com
+- API：https://issue-tracker-api-5h7s.onrender.com
+
+---
+
+## 注意事項
+
+本アプリは **Render（フロントエンド・API）+ Aiven（MySQL）の無料プラン** で公開しています。
+
+無料プランでは、一定時間アクセスがないと Render のサービスがスリープ状態になります。
+
+その場合は初回アクセス時に **30〜60秒程度** 起動時間がかかることがあります。APIの起動完了後は通常どおりご利用いただけます。
+
+---
+
 ## スクリーンショット
 
 ### 課題一覧
