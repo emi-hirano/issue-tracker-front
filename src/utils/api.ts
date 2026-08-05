@@ -1,5 +1,6 @@
 // APIのベースURL
-const API_BASE = "http://localhost/api";
+const API_BASE =
+  import.meta.env.VITE_API_URL || "http://localhost/api";
 
 /**
  * 認証トークン付きでAPIを呼び出す共通関数。
