@@ -24,6 +24,17 @@ React + TypeScript を使用してフロントエンドを実装しました。
 
 ---
 
+## テストアカウント
+
+ログインして動作を確認できます。
+
+| 項目 | 値 |
+|------|------|
+| Email | `test@example.com` |
+| Password | `password123` |
+
+---
+
 ## 注意事項
 
 本アプリは **Render（フロントエンド・API）+ Aiven（MySQL）の無料プラン** で公開しています。
