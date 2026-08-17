@@ -220,6 +220,7 @@ function IssueList() {
               クリア
             </button>
           </div>
+        </div>
           {/* Closed表示切り替え */}
           <div style={{ marginTop: "8px" }}>
             <label
@@ -237,7 +238,6 @@ function IssueList() {
               Closedを表示
             </label>
           </div>
-        </div>
       </div>      
       {/* 取得した課題を1件ずつカードとして表示 */}
       {issues.length === 0 ? (
