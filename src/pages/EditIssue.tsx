@@ -27,6 +27,7 @@ function EditIssue() {
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("open");
   const [priority, setPriority] = useState("medium");
+  const [originalStatus, setOriginalStatus] = useState("");
   const [error, setError] = useState("");
 
   // 画面表示時：プルダウン用データ＋編集対象の既存データを取得
@@ -45,6 +46,7 @@ function EditIssue() {
       setTitle(data.title);
       setDescription(data.description ?? "");
       setStatus(data.status);
+      setOriginalStatus(data.status);
       setPriority(data.priority);
       // 今付いているラベルのidだけを取り出して、チェック済みにする
       setLabelIds(data.labels.map((label: Label) => label.id));
@@ -56,7 +58,13 @@ function EditIssue() {
   // 「更新する」ボタンの処理
   const handleSubmit = () => {
     setError("");
-    // const token = localStorage.getItem("token");
+    if (originalStatus !== "closed" && status === "closed") {
+    const confirmed = window.confirm("この課題をCloseしますか？");
+
+    if (!confirmed) {
+      return;
+    }
+  }
 
   apiFetch(`/issues/${id}`, {
     method: "PUT",
