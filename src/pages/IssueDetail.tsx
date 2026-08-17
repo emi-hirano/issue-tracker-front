@@ -47,59 +47,40 @@ function IssueDetail() {
 
     // 「削除する」ボタンの処理
     const handleDelete = () => {
-      // 誤操作防止：確認ダイアログを出す
       if (!window.confirm("この課題を削除しますか？")) {
-        return; // キャンセルされたら何もしない
+        return;
       }
 
-      const token = localStorage.getItem("token");
-
-      fetch(`http://localhost/api/issues/${id}`, {
-        method: "DELETE", // 削除なのでDELETE
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`, // トークンで認証
-        },
+      apiFetch(`/issues/${id}`, {
+        method: "DELETE",
       })
-        .then((res) => {
-          if (!res.ok) {
-            throw new Error("削除に失敗しました");
-          }
-          // 削除成功したら一覧へ戻る
+        .then(() => {
           navigate("/");
         })
         .catch((err) => {
-          alert(err.message); // 失敗したらメッセージ表示
+          alert(err.message);
         });
-  };
+    };
 
   // コメントを投稿する
   const handleCommentSubmit = () => {
     setCommentError("");
-    const token = localStorage.getItem("token");
 
-    fetch(`http://localhost/api/issues/${id}/comments`, {
+    apiFetch(`/issues/${id}/comments`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ body: commentBody }), // 本文だけ送る（投稿者はサーバーが決める）
+      body: JSON.stringify({
+        body: commentBody,
+      }),
     })
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("コメントの投稿に失敗しました（ログインが必要です）");
-        }
-        return res.json();
-      })
       .then((newComment) => {
-        // 投稿成功：一覧に新しいコメントを追加して、入力欄を空にする
         setIssue({
           ...issue!,
-          // comments: [...issue!.comments, newComment],
           comments: [newComment, ...issue!.comments],
         });
+
         setCommentBody("");
       })
       .catch((err) => {
@@ -107,11 +88,13 @@ function IssueDetail() {
       });
   };
     
-  // 存在しない課題のとき
+  // まず最初に読み込み中か確認
+  if (loading) {
+    return <Loading />;
+  }
+
+  // 読み込み終了後、存在しない課題だった場合
   if (notFound) {
-    if (loading) {
-      return <Loading />;
-    }
     return (
       <div style={{ maxWidth: "700px", margin: "0 auto", padding: "32px 16px" }}>
         <button onClick={() => navigate("/")}>← 一覧に戻る</button>
@@ -121,13 +104,11 @@ function IssueDetail() {
     );
   }
 
-  // まだ読み込み中のとき
+  // 念のためissueがない場合
   if (!issue) {
-    return <div style={{ padding: "16px" }}>読み込み中...</div>;
+    return null;
   }
-  if (loading) {
-    return <Loading />;
-  }
+
   return (
     <div style={{ maxWidth: "700px", margin: "0 auto", padding: "64px 16px 16px" }}>
 
