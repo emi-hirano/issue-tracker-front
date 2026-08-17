@@ -48,30 +48,30 @@ function NewIssue() {
 
   // 「登録する」ボタンを押したときの処理
   const handleSubmit = () => {
-    setError(""); // 前回のエラー表示をクリア
+    setError("");
 
-    // ログイン時に保存したトークンを取り出す
-    const token = localStorage.getItem("token");
-
-    fetch("http://localhost/api/issues", {
-      method: "POST", // 新規作成なのでPOST
+    apiFetch("/issues", {
+      method: "POST",
       headers: {
-        "Content-Type": "application/json", // JSON形式で送る
-        Accept: "application/json",         // JSON形式で返してもらう
-        // トークンを付けて「ログイン済み」であることを示す（auth:sanctum突破用）
-        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        // 入力値は文字列なので、idは数値に変換して送る
         project_id: Number(projectId),
         reporter_id: Number(reporterId),
-        title: title,
-        description: description,
-        status: status,
-        priority: priority,
+        title,
+        description,
+        status,
+        priority,
         label_ids: labelIds,
       }),
     })
+      .then(() => {
+        navigate("/");
+      })
+      .catch((err) => {
+        setError(err.message);
+      });
+  };
       .then((res) => {
         // 成功でない（バリデーションエラーや認証エラー）なら例外を投げてcatchへ
         if (!res.ok) {
