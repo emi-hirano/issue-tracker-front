@@ -59,7 +59,7 @@ function EditIssue() {
   const handleSubmit = () => {
     setError("");
     if (originalStatus !== "closed" && status === "closed") {
-    const confirmed = window.confirm("この課題をCloseしますか？");
+      const confirmed = window.confirm("この課題をCloseしますか？");
 
     if (!confirmed) {
       return;
