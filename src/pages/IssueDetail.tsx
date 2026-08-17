@@ -125,7 +125,9 @@ function IssueDetail() {
   if (!issue) {
     return <div style={{ padding: "16px" }}>読み込み中...</div>;
   }
-
+  if (loading) {
+    return <Loading />;
+  }
   return (
     <div style={{ maxWidth: "700px", margin: "0 auto", padding: "64px 16px 16px" }}>
 
