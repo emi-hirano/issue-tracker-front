@@ -72,21 +72,6 @@ function NewIssue() {
         setError(err.message);
       });
   };
-      .then((res) => {
-        // 成功でない（バリデーションエラーや認証エラー）なら例外を投げてcatchへ
-        if (!res.ok) {
-          throw new Error("登録に失敗しました（入力内容を確認してください）");
-        }
-        return res.json();
-      })
-      .then(() => {
-        navigate("/"); // 成功したら一覧ページへ戻る
-      })
-      .catch((err) => {
-        setError(err.message); // 失敗したらエラーメッセージを画面に表示
-      });
-  };
-
   return (
     <div style={{ maxWidth: "500px", margin: "0 auto", padding: "16px" }}>
       <h1>課題の新規登録</h1>
