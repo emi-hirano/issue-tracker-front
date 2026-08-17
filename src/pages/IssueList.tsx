@@ -219,12 +219,14 @@ function IssueList() {
             >
               クリア
             </button>
+          </div>
+          {/* Closed表示切り替え */}
+          <div style={{ marginTop: "8px" }}>
             <label
               style={{
-                display: "flex",
+                display: "inline-flex",
                 alignItems: "center",
                 gap: "4px",
-                whiteSpace: "nowrap",
               }}
             >
               <input
