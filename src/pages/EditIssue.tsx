@@ -41,6 +41,7 @@ function EditIssue() {
       // idは数値なので、input用に文字列へ変換して入れる
       setProjectId(String(data.project_id));
       setReporterId(String(data.reporter_id));
+      setAssigneeId(data.assignee_id ? String(data.assignee_id) : "");
       setTitle(data.title);
       setDescription(data.description ?? "");
       setStatus(data.status);
