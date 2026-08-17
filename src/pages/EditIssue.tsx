@@ -18,7 +18,8 @@ function EditIssue() {
   const [users, setUsers] = useState<User[]>([]);
   const [labels, setLabels] = useState<Label[]>([]);
   const [labelIds, setLabelIds] = useState<number[]>([]);
-  
+  const [assigneeId, setAssigneeId] = useState("");
+
   // フォームの入力値（最初は空。既存データ読み込み後に埋める）
   const [projectId, setProjectId] = useState("");
   const [reporterId, setReporterId] = useState("");
@@ -54,38 +55,30 @@ function EditIssue() {
   // 「更新する」ボタンの処理
   const handleSubmit = () => {
     setError("");
-    const token = localStorage.getItem("token");
+    // const token = localStorage.getItem("token");
 
-    fetch(`http://localhost/api/issues/${id}`, {
-      method: "PUT", // 更新なのでPUT
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        project_id: Number(projectId),
-        reporter_id: Number(reporterId),
-        title: title,
-        description: description,
-        status: status,
-        priority: priority,
-        label_ids: labelIds,
-      }),
+  apiFetch(`/issues/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      project_id: Number(projectId),
+      reporter_id: Number(reporterId),
+      assignee_id: assigneeId ? Number(assigneeId) : null,
+      title,
+      description,
+      status,
+      priority,
+      label_ids: labelIds,
+    }),
+  })
+    .then(() => {
+      navigate(`/issues/${id}`);
     })
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("更新に失敗しました（入力内容を確認してください）");
-        }
-        return res.json();
-      })
-      .then(() => {
-        // 更新後は詳細ページに戻る
-        navigate(`/issues/${id}`);
-      })
-      .catch((err) => {
-        setError(err.message);
-      });
+    .catch((err) => {
+      setError(err.message);
+    });
   };
 
   return (
@@ -129,7 +122,21 @@ function EditIssue() {
           ))}
         </select>
       </div>
-
+      <div style={{ marginBottom: "12px" }}>
+        <label style={{ display: "block", marginBottom: "4px" }}>担当者</label>
+        <select
+          value={assigneeId}
+          onChange={(e) => setAssigneeId(e.target.value)}
+          style={{ width: "100%", padding: "8px" }}
+        >
+          <option value="">未割り当て</option>
+          {users.map((user) => (
+            <option key={user.id} value={user.id}>
+              {user.name}
+            </option>
+          ))}
+        </select>
+      </div>
       {/* タイトル */}
       <div style={{ marginBottom: "12px" }}>
         <label style={{ display: "block", marginBottom: "4px" }}>タイトル</label>
