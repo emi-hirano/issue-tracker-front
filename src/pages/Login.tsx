@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+const API_BASE =
+  import.meta.env.VITE_API_URL || "http://localhost/api";
+
 function Login() {
   // 入力値を覚えておく箱
   const [email, setEmail] = useState("");
@@ -13,7 +16,7 @@ function Login() {
   const handleLogin = () => {
     setError(""); // 前回のエラー表示をクリア
 
-    fetch("http://localhost/api/login", {
+  fetch(`${API_BASE}/login`, {
       method: "POST", // ログインは情報を送るのでPOST
       headers: {
         "Content-Type": "application/json", // JSON形式で送る
