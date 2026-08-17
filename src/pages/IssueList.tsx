@@ -48,6 +48,8 @@ function IssueList() {
   // 検索に使うラベル
   const [searchLabel, setSearchLabel] = useState("all");
 
+  const [showClosed, setShowClosed] = useState(true);
+
   // 初回表示時にラベル一覧を取得
   useEffect(() => {
     apiFetch("/labels").then((data) => setLabels(data));
@@ -217,6 +219,21 @@ function IssueList() {
             >
               クリア
             </button>
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
+                whiteSpace: "nowrap",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={showClosed}
+                onChange={(e) => setShowClosed(e.target.checked)}
+              />
+              Closedを表示
+            </label>
           </div>
         </div>
       </div>      
@@ -224,7 +241,9 @@ function IssueList() {
       {issues.length === 0 ? (
         <p>該当する課題はありません。</p>
       ) : (
-        issues.map((issue) => (
+        issues
+          .filter((issue) => showClosed || issue.status !== "closed")
+          .map((issue) => (
           <div
             key={issue.id}
             onClick={() => navigate(`/issues/${issue.id}`)}
@@ -235,6 +254,10 @@ function IssueList() {
               padding: "12px 16px",
               marginBottom: "12px",
               cursor: "pointer",
+              
+            // Closedは視覚的に弱くする
+            opacity: issue.status === "closed" ? 0.5 : 1,
+            backgroundColor: issue.status === "closed" ? "#f5f5f5" : "#fff",
             }}
           >
             {/* 1行目：タイトル（左）とステータス/優先度（右）を両端に配置 */}
@@ -246,7 +269,13 @@ function IssueList() {
                 marginBottom: "8px",
               }}
             >
-              <div style={{ fontWeight: "bold", fontSize: "16px" }}>
+              <div
+                style={{
+                  fontWeight: "bold",
+                  fontSize: "16px",
+                  textDecoration: issue.status === "closed" ? "line-through" : "none",
+                }}
+              >
                 {issue.title}
               </div>
               <div style={{ display: "flex", gap: "6px" }}>
