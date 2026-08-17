@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { isLightColor, formatDate, statusColor, priorityColor } from "../utils/format";
+import { apiFetch } from "../utils/api";
 
 type Label = {
   id: number;
@@ -23,29 +24,10 @@ function MyIssues() {
   const [message, setMessage] = useState("読み込み中...");
   const navigate = useNavigate();
   const [issues, setIssues] = useState<Issue[]>([]);
-  useEffect(() => {
-      console.log(localStorage.getItem("token"));
-      fetch("http://localhost/api/my-issues", {
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      })
-      .then((res) => {
-        console.log("レスポンス", res);
-
-        if (!res.ok) {
-          throw new Error(`APIエラー: ${res.status}`);
-        }
-
-        return res.json();
-      })
+    useEffect(() => {
+    apiFetch("/my-issues")
       .then((data) => {
-        console.log(data);
-
-        // 確認用APIでは data.issues に一覧が入っている
         setIssues(data.data);
-
         setMessage("自分にアサインされた課題を表示しています");
       })
       .catch((error) => {
