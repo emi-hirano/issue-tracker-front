@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { isLightColor, formatDate, statusColor, priorityColor } from "../utils/format";
 import { apiFetch } from "../utils/api";
+import Loading from "../components/Loading";
 
 type Label = {
   id: number;
@@ -50,6 +51,8 @@ function IssueList() {
 
   const [showClosed, setShowClosed] = useState(true);
 
+  const [loading, setLoading] = useState(true);
+
   // 初回表示時にラベル一覧を取得
   useEffect(() => {
     apiFetch("/labels").then((data) => setLabels(data));
@@ -85,15 +88,23 @@ function IssueList() {
     const path =
       queryString === "" ? "/issues" : `/issues?${queryString}`;
 
-    apiFetch(path).then((data) => {
-      setIssues(data.data);
-      setCurrentPage(data.current_page);
-      setLastPage(data.last_page);
-    });
+    apiFetch(path)
+      .then((data) => {
+        setIssues(data.data);
+        setCurrentPage(data.current_page);
+        setLastPage(data.last_page);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
 
   // 検索条件が変わったら再取得
   }, [searchKeyword, searchStatus, searchPriority, searchLabel, currentPage]);
 
+  if (loading) {
+    return <Loading />;
+  }
+  
   return (
     // <div style={{ maxWidth: "800px", margin: "0 auto", padding: "16px" }}>
     <div style={{ maxWidth: "800px", margin: "0 auto", padding: "64px 16px 16px" }}>

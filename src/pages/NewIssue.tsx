@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../utils/api";
+import Loading from "../components/Loading";
 
 // プルダウンに出すプロジェクトの形（idと名前だけあればいい）
 type Project = {
@@ -36,16 +37,25 @@ function NewIssue() {
 
   const navigate = useNavigate(); // 登録成功後に一覧へ移動するための道具
 
-  // 画面が最初に表示されたとき、プルダウン用のデータを取得する
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    // プロジェクト一覧を取得
-    apiFetch("/projects").then((data) => setProjects(data));
+    setLoading(true);
 
-    // ユーザー一覧を取得（idとnameのみ返すAPI）
-    apiFetch("/users").then((data) => setUsers(data));
-
-    apiFetch("/labels").then((data) => setLabels(data));
-  }, []); // []なので最初の1回だけ実行
+    Promise.all([
+      apiFetch("/projects"),
+      apiFetch("/users"),
+      apiFetch("/labels"),
+    ])
+      .then(([projectsData, usersData, labelsData]) => {
+        setProjects(projectsData);
+        setUsers(usersData);
+        setLabels(labelsData);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
 
   // 「登録する」ボタンを押したときの処理
   const handleSubmit = () => {
@@ -74,6 +84,11 @@ function NewIssue() {
         setError(err.message);
       });
   };
+
+  if (loading) {
+    return <Loading />;
+  }
+  
   return (
     <div style={{ maxWidth: "500px", margin: "0 auto", padding: "16px" }}>
       <h1>課題の新規登録</h1>

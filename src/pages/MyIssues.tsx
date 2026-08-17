@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { isLightColor, formatDate, statusColor, priorityColor } from "../utils/format";
 import { apiFetch } from "../utils/api";
+import Loading from "../components/Loading";
 
 type Label = {
   id: number;
@@ -24,6 +25,8 @@ function MyIssues() {
   const [message, setMessage] = useState("読み込み中...");
   const navigate = useNavigate();
   const [issues, setIssues] = useState<Issue[]>([]);
+  const [loading, setLoading] = useState(true);
+
     useEffect(() => {
     apiFetch("/my-issues")
       .then((data) => {
@@ -33,9 +36,15 @@ function MyIssues() {
       .catch((error) => {
         console.error(error);
         setMessage("取得に失敗しました");
+      })
+      .finally(() => {
+        setLoading(false);
       });
   }, []);
 
+if (loading) {
+  return <Loading />;
+}
 return (
     <div
     style={{

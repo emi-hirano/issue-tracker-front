@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { isLightColor, formatDate, statusColor, priorityColor } from "../utils/format";
 import { apiFetch } from "../utils/api";
+import Loading from "../components/Loading";
 
 // 課題詳細の形（showが返すリレーション込みの構造）
 type Issue = {
@@ -33,11 +34,15 @@ function IssueDetail() {
   const [notFound, setNotFound] = useState(false);
   const [commentBody, setCommentBody] = useState("");
   const [commentError, setCommentError] = useState("");
-
+  const [loading, setLoading] = useState(true);
+  
   useEffect(() => {
     apiFetch(`/issues/${id}`)
       .then((data) => setIssue(data))
-      .catch(() => setNotFound(true)); // 失敗したら「見つからない」状態にする
+      .catch(() => setNotFound(true)) // 失敗したら「見つからない」状態にする
+      .finally(() => {
+        setLoading(false);
+      });
   }, [id]);
 
     // 「削除する」ボタンの処理
@@ -104,6 +109,9 @@ function IssueDetail() {
     
   // 存在しない課題のとき
   if (notFound) {
+    if (loading) {
+      return <Loading />;
+    }
     return (
       <div style={{ maxWidth: "700px", margin: "0 auto", padding: "32px 16px" }}>
         <button onClick={() => navigate("/")}>← 一覧に戻る</button>

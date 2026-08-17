@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { apiFetch } from "../utils/api";
+import Loading from "../components/Loading";
 
 type Label = { id: number; name: string; color: string };
 
@@ -30,29 +31,49 @@ function EditIssue() {
   const [originalStatus, setOriginalStatus] = useState("");
   const [error, setError] = useState("");
 
+  // スピナー
+  const [loading, setLoading] = useState(true);
+
   // 画面表示時：プルダウン用データ＋編集対象の既存データを取得
   useEffect(() => {
-    // プルダウン用（新規登録と同じ）
-    apiFetch("/projects").then((data) => setProjects(data));
+    setLoading(true);
 
-    apiFetch("/users").then((data) => setUsers(data));
+    Promise.all([
+      apiFetch("/projects"),
+      apiFetch("/users"),
+      apiFetch("/labels"),
+      apiFetch(`/issues/${id}`),
+    ])
+      .then(([projectsData, usersData, labelsData, issueData]) => {
+        // プルダウン用
+        setProjects(projectsData);
+        setUsers(usersData);
+        setLabels(labelsData);
 
-    // 編集対象の課題を取得して、各入力欄に初期値としてセット
-    apiFetch(`/issues/${id}`).then((data) => {
-      // idは数値なので、input用に文字列へ変換して入れる
-      setProjectId(String(data.project_id));
-      setReporterId(data.reporter ? String(data.reporter.id) : "");
-      setAssigneeId(data.assignee ? String(data.assignee.id) : "");
-      setTitle(data.title);
-      setDescription(data.description ?? "");
-      setStatus(data.status);
-      setOriginalStatus(data.status);
-      setPriority(data.priority);
-      // 今付いているラベルのidだけを取り出して、チェック済みにする
-      setLabelIds(data.labels.map((label: Label) => label.id));
-    });
-
-    apiFetch("/labels").then((data) => setLabels(data));
+        // 編集対象の課題
+        setProjectId(String(issueData.project_id));
+        setReporterId(
+          issueData.reporter ? String(issueData.reporter.id) : ""
+        );
+        setAssigneeId(
+          issueData.assignee ? String(issueData.assignee.id) : ""
+        );
+        setTitle(issueData.title);
+        setDescription(issueData.description ?? "");
+        setStatus(issueData.status);
+        setOriginalStatus(issueData.status);
+        setPriority(issueData.priority);
+        setLabelIds(
+          issueData.labels.map((label: Label) => label.id)
+        );
+      })
+      .catch((err) => {
+        console.error(err);
+        setError("データの取得に失敗しました");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [id]);
 
   // 「更新する」ボタンの処理
@@ -89,6 +110,10 @@ function EditIssue() {
       setError(err.message);
     });
   };
+  
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <div style={{ maxWidth: "500px", margin: "0 auto", padding: "16px" }}>
