@@ -27,6 +27,7 @@ function NewIssue() {
   // フォームの入力値を覚えておく箱（入力するたびに更新される）
   const [projectId, setProjectId] = useState("");
   const [reporterId, setReporterId] = useState("");
+  const [assigneeId, setAssigneeId] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("open");     // 初期値open
@@ -58,6 +59,7 @@ function NewIssue() {
       body: JSON.stringify({
         project_id: Number(projectId),
         reporter_id: Number(reporterId),
+        assignee_id: assigneeId ? Number(assigneeId) : null,
         title,
         description,
         status,
@@ -113,7 +115,22 @@ function NewIssue() {
           ))}
         </select>
       </div>
-
+      {/* 担当者 */}
+      <div style={{ marginBottom: "12px" }}>
+        <label style={{ display: "block", marginBottom: "4px" }}>担当者</label>
+        <select
+          value={assigneeId}
+          onChange={(e) => setAssigneeId(e.target.value)}
+          style={{ width: "100%", padding: "8px" }}
+        >
+          <option value="">未割り当て</option>
+          {users.map((user) => (
+            <option key={user.id} value={user.id}>
+              {user.name}
+            </option>
+          ))}
+        </select>
+      </div>
       {/* タイトル（必須・255文字まで） */}
       <div style={{ marginBottom: "12px" }}>
         <label style={{ display: "block", marginBottom: "4px" }}>タイトル</label>
