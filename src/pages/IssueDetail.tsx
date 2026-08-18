@@ -66,6 +66,10 @@ function IssueDetail() {
   const handleCommentSubmit = () => {
     setCommentError("");
 
+    if (commentBody.trim() === "") {
+      setCommentError("コメントを入力してください");
+      return;
+    }
     apiFetch(`/issues/${id}/comments`, {
       method: "POST",
       headers: {
@@ -190,7 +194,11 @@ function IssueDetail() {
         {commentError && (
           <div style={{ color: "red", marginBottom: "8px" }}>{commentError}</div>
         )}
-        <button onClick={handleCommentSubmit} style={{ marginTop: "8px" }}>
+        <button
+          onClick={handleCommentSubmit}
+          disabled={commentBody.trim() === ""}
+          style={{ marginTop: "8px" }}
+        >
           コメントする
         </button>
       </div>
