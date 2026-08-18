@@ -38,6 +38,7 @@ function NewIssue() {
   const navigate = useNavigate(); // 登録成功後に一覧へ移動するための道具
 
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -60,6 +61,7 @@ function NewIssue() {
   // 「登録する」ボタンを押したときの処理
   const handleSubmit = () => {
     setError("");
+    setSubmitting(true);
 
     apiFetch("/issues", {
       method: "POST",
@@ -82,10 +84,17 @@ function NewIssue() {
       })
       .catch((err) => {
         setError(err.message);
+      })
+      .finally(() => {
+        setSubmitting(false);
       });
   };
 
   if (loading) {
+    return <Loading />;
+  }
+
+  if (submitting) {
     return <Loading />;
   }
   

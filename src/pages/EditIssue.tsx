@@ -33,7 +33,8 @@ function EditIssue() {
 
   // スピナー
   const [loading, setLoading] = useState(true);
-
+  const [submitting, setSubmitting] = useState(false);
+  
   // 画面表示時：プルダウン用データ＋編集対象の既存データを取得
   useEffect(() => {
     setLoading(true);
@@ -87,6 +88,8 @@ function EditIssue() {
     }
   }
 
+  setSubmitting(true);
+
   apiFetch(`/issues/${id}`, {
     method: "PUT",
     headers: {
@@ -108,10 +111,13 @@ function EditIssue() {
     })
     .catch((err) => {
       setError(err.message);
+    })
+    .finally(() => {
+      setSubmitting(false);
     });
   };
-  
-  if (loading) {
+
+  if (loading || submitting) {
     return <Loading />;
   }
 
