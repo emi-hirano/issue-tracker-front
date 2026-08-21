@@ -34,6 +34,7 @@ function IssueDetail() {
   const [notFound, setNotFound] = useState(false);
   const [commentBody, setCommentBody] = useState("");
   const [commentError, setCommentError] = useState("");
+  const [deleteError, setDeleteError] = useState("");
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
@@ -51,6 +52,8 @@ function IssueDetail() {
         return;
       }
 
+      setDeleteError("");
+
       apiFetch(`/issues/${id}`, {
         method: "DELETE",
       })
@@ -58,7 +61,7 @@ function IssueDetail() {
           navigate("/");
         })
         .catch((err) => {
-          alert(err.message);
+          setDeleteError(err.message);
         });
     };
 
@@ -122,6 +125,10 @@ function IssueDetail() {
         <button onClick={() => navigate(`/issues/${issue.id}/edit`)}>編集する</button>
         <button onClick={handleDelete} style={{ color: "red" }}>削除する</button>
       </div>
+
+      {deleteError && (
+        <div style={{ color: "red", marginBottom: "12px" }}>{deleteError}</div>
+      )}
 
       {/* タイトルは単独で1行使う（長くても折り返せる） */}
       <h1>{issue.title}</h1>

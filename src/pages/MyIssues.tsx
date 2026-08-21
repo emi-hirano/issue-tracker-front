@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { isLightColor, formatDate, statusColor, priorityColor } from "../utils/format";
 import { apiFetch } from "../utils/api";
 import Loading from "../components/Loading";
+import IssueCard from "../components/IssueCard";
 
 type Label = {
   id: number;
@@ -22,20 +22,18 @@ type Issue = {
 };
 
 function MyIssues() {
-  const [message, setMessage] = useState("読み込み中...");
   const navigate = useNavigate();
   const [issues, setIssues] = useState<Issue[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
     useEffect(() => {
     apiFetch("/my-issues")
       .then((data) => {
         setIssues(data.data);
-        setMessage("自分にアサインされた課題を表示しています");
       })
-      .catch((error) => {
-        console.error(error);
-        setMessage("取得に失敗しました");
+      .catch(() => {
+        setError("取得に失敗しました");
       })
       .finally(() => {
         setLoading(false);
@@ -54,84 +52,19 @@ return (
     }}
   >
     <h1>自分の課題</h1>
-    <p>{message}</p>
+    {error && (
+      <div style={{ color: "red", marginBottom: "12px" }}>{error}</div>
+    )}
 
   {issues.length === 0 ? (
     <p>自分にアサインされた課題はありません。</p>
   ) : (
     issues.map((issue) => (
-      <div
+      <IssueCard
         key={issue.id}
+        issue={issue}
         onClick={() => navigate(`/issues/${issue.id}`)}
-        style={{
-          border: "1px solid #ddd",
-          borderRadius: "8px",
-          padding: "12px 16px",
-          marginBottom: "12px",
-          cursor: "pointer",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "8px",
-          }}
-        >
-          <div style={{ fontWeight: "bold", fontSize: "16px" }}>
-            {issue.title}
-          </div>
-
-          <div style={{ display: "flex", gap: "6px" }}>
-            <span
-              style={{
-                backgroundColor: statusColor(issue.status).bg,
-                color: statusColor(issue.status).text,
-                padding: "2px 8px",
-                borderRadius: "4px",
-                fontSize: "12px",
-              }}
-            >
-              {issue.status}
-            </span>
-
-            <span
-              style={{
-                backgroundColor: priorityColor(issue.priority).bg,
-                color: priorityColor(issue.priority).text,
-                padding: "2px 8px",
-                borderRadius: "4px",
-                fontSize: "12px",
-              }}
-            >
-              {issue.priority}
-            </span>
-          </div>
-        </div>
-
-        <div style={{ fontSize: "14px", color: "#555", marginBottom: "8px" }}>
-          報告者: {issue.reporter?.name ?? "未割り当て"}・ 起票: {formatDate(issue.created_at)}
-        </div>
-
-        <div>
-          {issue.labels.map((label) => (
-            <span
-              key={label.id}
-              style={{
-                backgroundColor: label.color,
-                color: isLightColor(label.color) ? "#000" : "#fff",
-                padding: "2px 8px",
-                borderRadius: "4px",
-                marginRight: "4px",
-                fontSize: "12px",
-              }}
-            >
-              {label.name}
-            </span>
-          ))}
-        </div>
-      </div>
+      />
     ))
   )}
   </div>

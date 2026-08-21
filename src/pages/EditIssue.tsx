@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { apiFetch } from "../utils/api";
 import Loading from "../components/Loading";
+import IssueForm from "../components/IssueForm";
 
 type Label = { id: number; name: string; color: string };
 
@@ -23,13 +24,13 @@ function EditIssue() {
 
   // フォームの入力値（最初は空。既存データ読み込み後に埋める）
   const [projectId, setProjectId] = useState("");
-  const [reporterId, setReporterId] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("open");
   const [priority, setPriority] = useState("medium");
   const [originalStatus, setOriginalStatus] = useState("");
   const [error, setError] = useState("");
+  const [notFound, setNotFound] = useState(false);
 
   // スピナー
   const [loading, setLoading] = useState(true);
@@ -53,9 +54,6 @@ function EditIssue() {
 
         // 編集対象の課題
         setProjectId(String(issueData.project_id));
-        setReporterId(
-          issueData.reporter ? String(issueData.reporter.id) : ""
-        );
         setAssigneeId(
           issueData.assignee ? String(issueData.assignee.id) : ""
         );
@@ -68,9 +66,8 @@ function EditIssue() {
           issueData.labels.map((label: Label) => label.id)
         );
       })
-      .catch((err) => {
-        console.error(err);
-        setError("データの取得に失敗しました");
+      .catch(() => {
+        setNotFound(true);
       })
       .finally(() => {
         setLoading(false);
@@ -80,6 +77,12 @@ function EditIssue() {
   // 「更新する」ボタンの処理
   const handleSubmit = () => {
     setError("");
+
+    if (!projectId || title.trim() === "") {
+      setError("プロジェクトとタイトルは必須です");
+      return;
+    }
+
     if (originalStatus !== "closed" && status === "closed") {
       const confirmed = window.confirm("この課題をCloseしますか？");
 
@@ -97,7 +100,6 @@ function EditIssue() {
     },
     body: JSON.stringify({
       project_id: Number(projectId),
-      reporter_id: Number(reporterId),
       assignee_id: assigneeId ? Number(assigneeId) : null,
       title,
       description,
@@ -117,8 +119,18 @@ function EditIssue() {
     });
   };
 
-  if (loading || submitting) {
+  if (loading) {
     return <Loading />;
+  }
+
+  if (notFound) {
+    return (
+      <div style={{ maxWidth: "500px", margin: "0 auto", padding: "16px" }}>
+        <button onClick={() => navigate("/")}>一覧に戻る</button>
+        <h1>課題が見つかりません</h1>
+        <p>指定された課題は存在しないか、削除された可能性があります。</p>
+      </div>
+    );
   }
 
   return (
@@ -129,134 +141,31 @@ function EditIssue() {
         戻る
       </button>
       
-      {/* プロジェクト */}
-      <div style={{ marginBottom: "12px" }}>
-        <label style={{ display: "block", marginBottom: "4px" }}>プロジェクト</label>
-        <select
-          value={projectId}
-          onChange={(e) => setProjectId(e.target.value)}
-          style={{ width: "100%", padding: "8px" }}
-        >
-          <option value="">選択してください</option>
-          {projects.map((project) => (
-            <option key={project.id} value={project.id}>
-              {project.name}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* 報告者 */}
-      <div style={{ marginBottom: "12px" }}>
-        <label style={{ display: "block", marginBottom: "4px" }}>報告者</label>
-        <select
-          value={reporterId}
-          onChange={(e) => setReporterId(e.target.value)}
-          style={{ width: "100%", padding: "8px" }}
-        >
-          <option value="">選択してください</option>
-          {users.map((user) => (
-            <option key={user.id} value={user.id}>
-              {user.name}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div style={{ marginBottom: "12px" }}>
-        <label style={{ display: "block", marginBottom: "4px" }}>担当者</label>
-        <select
-          value={assigneeId}
-          onChange={(e) => setAssigneeId(e.target.value)}
-          style={{ width: "100%", padding: "8px" }}
-        >
-          <option value="">未割り当て</option>
-          {users.map((user) => (
-            <option key={user.id} value={user.id}>
-              {user.name}
-            </option>
-          ))}
-        </select>
-      </div>
-      {/* タイトル */}
-      <div style={{ marginBottom: "12px" }}>
-        <label style={{ display: "block", marginBottom: "4px" }}>タイトル</label>
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          style={{ width: "100%", padding: "8px", boxSizing: "border-box" }}
-        />
-      </div>
-
-      {/* 説明 */}
-      <div style={{ marginBottom: "12px" }}>
-        <label style={{ display: "block", marginBottom: "4px" }}>説明</label>
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          style={{ width: "100%", padding: "8px", boxSizing: "border-box", minHeight: "80px" }}
-        />
-      </div>
-
-      {/* ステータス */}
-      <div style={{ marginBottom: "12px" }}>
-        <label style={{ display: "block", marginBottom: "4px" }}>ステータス</label>
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          style={{ width: "100%", padding: "8px" }}
-        >
-          <option value="open">open</option>
-          <option value="in_progress">in_progress</option>
-          <option value="resolved">resolved</option>
-          <option value="closed">closed</option>
-        </select>
-      </div>
-
-      {/* 優先度 */}
-      <div style={{ marginBottom: "12px" }}>
-        <label style={{ display: "block", marginBottom: "4px" }}>優先度</label>
-        <select
-          value={priority}
-          onChange={(e) => setPriority(e.target.value)}
-          style={{ width: "100%", padding: "8px" }}
-        >
-          <option value="low">low</option>
-          <option value="medium">medium</option>
-          <option value="high">high</option>
-        </select>
-      </div>
-
-      {/* ラベル選択（複数選択可・既存ラベルは初期チェック済み） */}
-      <div style={{ marginBottom: "12px" }}>
-        <label style={{ display: "block", marginBottom: "4px" }}>ラベル</label>
-        {labels.map((label) => (
-          <label
-            key={label.id}
-            style={{ display: "inline-flex", alignItems: "center", marginRight: "12px", marginBottom: "4px" }}
-          >
-            <input
-              type="checkbox"
-              checked={labelIds.includes(label.id)}
-              onChange={(e) => {
-                if (e.target.checked) {
-                  setLabelIds([...labelIds, label.id]);
-                } else {
-                  setLabelIds(labelIds.filter((id) => id !== label.id));
-                }
-              }}
-              style={{ marginRight: "4px" }}
-            />
-            {label.name}
-          </label>
-        ))}
-      </div>
+      <IssueForm
+        projects={projects}
+        users={users}
+        labels={labels}
+        projectId={projectId}
+        onProjectIdChange={setProjectId}
+        assigneeId={assigneeId}
+        onAssigneeIdChange={setAssigneeId}
+        title={title}
+        onTitleChange={setTitle}
+        description={description}
+        onDescriptionChange={setDescription}
+        status={status}
+        onStatusChange={setStatus}
+        priority={priority}
+        onPriorityChange={setPriority}
+        labelIds={labelIds}
+        onLabelIdsChange={setLabelIds}
+      />
 
       {error && (
         <div style={{ color: "red", marginBottom: "12px" }}>{error}</div>
       )}
 
-      <button onClick={handleSubmit} style={{ padding: "8px 16px" }}>
+      <button onClick={handleSubmit} disabled={submitting} style={{ padding: "8px 16px" }}>
         更新する
       </button>
     </div>

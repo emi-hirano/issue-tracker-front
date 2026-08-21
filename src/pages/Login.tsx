@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const API_BASE =
@@ -9,12 +9,27 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(""); // エラーメッセージ用
+  const [submitting, setSubmitting] = useState(false);
 
   const navigate = useNavigate(); // ログイン成功後に一覧へ移動するための道具
+
+  // ログイン済み(トークンあり)なら一覧へ自動リダイレクト
+  useEffect(() => {
+    if (localStorage.getItem("token")) {
+      navigate("/");
+    }
+  }, [navigate]);
 
   // 「ログイン」ボタンを押したときの処理
   const handleLogin = () => {
     setError(""); // 前回のエラー表示をクリア
+
+    if (email.trim() === "" || password.trim() === "") {
+      setError("入力してください");
+      return;
+    }
+
+    setSubmitting(true);
 
   fetch(`${API_BASE}/login`, {
       method: "POST", // ログインは情報を送るのでPOST
@@ -36,8 +51,12 @@ function Login() {
         localStorage.setItem("token", data.token);
         navigate("/"); // 一覧ページへ移動
       })
-      .catch((err) => {
-        setError(err.message); // 失敗したらエラーメッセージを表示
+      .catch(() => {
+        // 認証失敗(401)と通信エラーはメッセージで区別しない
+        setError("ログインに失敗しました");
+      })
+      .finally(() => {
+        setSubmitting(false);
       });
   };
 
@@ -77,7 +96,7 @@ function Login() {
         <div style={{ color: "red", marginBottom: "12px" }}>{error}</div>
       )}
 
-      <button type="submit" style={{ padding: "8px 16px" }}>
+      <button type="submit" disabled={submitting} style={{ padding: "8px 16px" }}>
         ログイン
       </button>
     </form>
